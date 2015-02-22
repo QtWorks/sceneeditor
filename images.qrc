@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/Images">
+        <file alias="clear.png">Images/clear.png</file>
+        <file alias="open.png">Images/open.png</file>
+        <file alias="save.png">Images/save.png</file>
+        <file alias="saveas.png">Images/saveas.png</file>
+        <file alias="new.png">Images/new.png</file>
+        <file alias="img.png">Images/img.png</file>
+        <file alias="modify.png">Images/modify.png</file>
+        <file>Images/video.png</file>
+        <file alias="video.png">Images/video0.png</file>
+        <file alias="deploy.png">Images/deploy.png</file>
+        <file>Images/deploy0.png</file>
+    </qresource>
+    <qresource prefix="/logos">
+        <file alias="sceneeditor01.png">Images/sceneeditor01.png</file>
+    </qresource>
+</RCC>
