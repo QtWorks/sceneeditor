@@ -4,13 +4,15 @@
  * License: MIT License, http://opensource.org/licenses/MIT
  */
 
+#pragma once
+
 #ifndef __SEMAINWINDOW_H__
 #define __SEMAINWINDOW_H__
 
-#pragma once
-
 // Qt
+#include <QIcon>
 #include <QColor>
+#include <QMovie>
 #include <QPixmap>
 #include <QMainWindow>
 
@@ -21,6 +23,7 @@
 #include <SeSceneView.h>
 #include <SeScenePlayer.h>
 #include <SeMosaicWindow.h>
+#include <SeWebSocket.h>
 
 namespace Ui {
 class SeMainWindow;
@@ -46,6 +49,14 @@ private:
   SeScene *mpScene;
   SeSceneLayer *mpCurrentLayer;
   SeSceneLed *mpCurrentLed;
+  
+  // WebSocket stuff...
+  SeWebSocket *mpWebSocket;    
+  int numberOfStates_Which_Are_Ok;
+  int numberOfStates_Received;
+  #define NUMBER_OF_STATES_TO_REACH 10*20
+  // loading animation for the WebSocket button
+  QMovie *mpLoading;
     
   void initializeGui();
   void setChangeColor(QColor color);
@@ -106,6 +117,7 @@ private slots:
   void on_cmdGenerateVideo_clicked();
   void on_cmdDeploy_clicked();
   void on_actionAbout_SceneEditor_triggered();
+  void on_cmdDeployWebSocket_clicked();
 };
 
 #endif // __SEMAINWINDOW_H__

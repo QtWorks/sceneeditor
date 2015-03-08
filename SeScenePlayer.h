@@ -4,10 +4,10 @@
  * License: MIT License, http://opensource.org/licenses/MIT
  */
 
+#pragma once
+
 #ifndef __SESCENEPLAYER_H__
 #define __SESCENEPLAYER_H__
-
-#pragma once
 
 // SceneEditor
 

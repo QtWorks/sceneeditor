@@ -15,6 +15,8 @@
 #include <QHBoxLayout>
 #include <QFileDialog>
 #include <QColorDialog>
+#include <QInputDialog>
+#include <QtWebSockets/QtWebSockets>
 #include <QTreeWidgetItemIterator>
 
 #include <QJsonDocument>
@@ -45,6 +47,8 @@ SeMainWindow::SeMainWindow(QWidget *parent)
   , mpSceneView(NULL)
   , mpScene(NULL)
   , mpCurrentLed(NULL)
+  , mpWebSocket(NULL)
+  , mpLoading(NULL)
 {
   ui->setupUi(this);
   
@@ -76,17 +80,20 @@ SeMainWindow::SeMainWindow(QWidget *parent)
   QObject::connect(mpScenePlayer, &SeScenePlayer::started, [&](){
     ui->cmdStartAnimation->setEnabled(false);
     ui->cmdGenerateVideo->setEnabled(false);
+    ui->cmdDeployWebSocket->setEnabled(false);
     ui->cmdDeploy->setEnabled(false);
     ui->cmdStopAnimation->setEnabled(true);
   });
   QObject::connect(mpScenePlayer, &SeScenePlayer::paused, [&](){
     ui->cmdStartAnimation->setEnabled(true);   
     ui->cmdGenerateVideo->setEnabled(false);
+    ui->cmdDeployWebSocket->setEnabled(false);
     ui->cmdDeploy->setEnabled(false);
   });
   QObject::connect(mpScenePlayer, &SeScenePlayer::stopped, [&](){
     ui->cmdStopAnimation->setEnabled(false);
     ui->cmdGenerateVideo->setEnabled(true);
+    ui->cmdDeployWebSocket->setEnabled(true);
     ui->cmdDeploy->setEnabled(true);
     ui->cmdStartAnimation->setEnabled(true);
   });
@@ -94,6 +101,7 @@ SeMainWindow::SeMainWindow(QWidget *parent)
     QMessageBox::information(this, tr("Playback finished!"), tr("The visualization reached it's end."));
     ui->cmdStopAnimation->setEnabled(false);
     ui->cmdGenerateVideo->setEnabled(true);
+    ui->cmdDeployWebSocket->setEnabled(true);
     ui->cmdStartAnimation->setEnabled(true);
     ui->cmdDeploy->setEnabled(true);
   });
@@ -105,6 +113,7 @@ SeMainWindow::~SeMainWindow()
   
   if(mpMosaicWindow != NULL) { delete mpMosaicWindow; mpMosaicWindow = NULL; }
   if(mpScenePlayer != NULL) { delete mpScenePlayer; mpScenePlayer = NULL; }
+  if(mpWebSocket != NULL) { delete mpWebSocket; mpWebSocket = NULL; }
 }
 
 SeSceneLayer *SeMainWindow::createScene(const QString &identifier)
@@ -415,6 +424,7 @@ void SeMainWindow::sceneLayerClicked(const QString &identifier)
     bool r = p->topLevelItem(0) != NULL;
     
     ui->cmdGenerateVideo->setEnabled(r);
+    ui->cmdDeployWebSocket->setEnabled(r);
     ui->cmdStartAnimation->setEnabled(r);
     ui->cmdDeploy->setEnabled(r);
   }
@@ -572,6 +582,155 @@ void SeMainWindow::on_cmdGenerateVideo_clicked()
   mpScenePlayer->reset();
   mpScenePlayer->setLayers(layers);
   mpScenePlayer->generateVideo(videoTarget);
+}
+
+void SeMainWindow::on_cmdDeployWebSocket_clicked()
+{
+    if(mpCurrentLayer == NULL)
+    {
+        QMessageBox::information(this
+            , tr("No layer available!")
+            , tr("No layer selected or available."));
+        return;
+    }
+    QJsonObject jsonCmd = mpCurrentLayer->toGridCommand();
+    QJsonDocument jsonDoc;
+    jsonDoc.setObject(jsonCmd);
+    QString data2send = jsonDoc.toJson().simplified();
+    qDebug() << "JSON: " << data2send;
+    
+    QString targetAddr;
+    int targetPort;
+    
+    QSettings s("settings.ini", QSettings::IniFormat);
+    s.beginGroup("WebSocket");
+    targetAddr = s.value("Address", "127.0.0.1").toString();
+    targetPort = s.value("Port", 1337).toInt();
+    s.endGroup();
+    
+    bool ok0 = true, ok1 = true;
+    
+    targetAddr = QInputDialog::getText(this
+        , tr("WebSocket Target")
+        , tr("Address:")
+        , QLineEdit::Normal
+        , targetAddr
+        , &ok0
+        );
+    
+    targetPort = QInputDialog::getInt(this
+        , tr("WebSocket target")
+        , tr("Port:")
+        , targetPort, 1, 65535, 1, &ok1
+        );   
+    
+    if(!ok0 || !ok1 || targetAddr.isEmpty())
+    {
+        QMessageBox::information(this
+            , tr("Deploy cancelled!")
+            , tr("Invalid WebSocker data, deployment hast been cancelled."));
+        return;
+    }
+    
+    s.beginGroup("WebSocket");
+    s.setValue("Address", targetAddr);
+    s.setValue("Port", targetPort);
+    s.endGroup();
+    s.sync();
+        
+    QString url = QString("ws://%1:%2").arg(targetAddr).arg(targetPort);
+    if(mpWebSocket != NULL)
+    {
+        mpWebSocket->shutdown();
+        delete mpWebSocket;
+        mpWebSocket = NULL;
+    }
+    
+    if(mpLoading == NULL)
+    {
+        mpLoading = new QMovie(":/Images/loading.gif");
+        QObject::connect(mpLoading, &QMovie::frameChanged, [&](int frame){
+            Q_UNUSED(frame);
+            ui->cmdDeployWebSocket->setIcon(QIcon(mpLoading->currentPixmap()));
+        });
+        if(mpLoading->loopCount() != -1)
+        {
+            QObject::connect(mpLoading, SIGNAL(finished()), mpLoading, SLOT(start()));
+        }
+    }
+    
+    numberOfStates_Which_Are_Ok = 0;
+    numberOfStates_Received = 0;
+    
+    if(mpWebSocket == NULL)
+    {
+        mpWebSocket = new SeWebSocket();
+        QObject::connect(mpWebSocket, &SeWebSocket::connected, [=]()
+        {
+            mpLoading->start();        
+            qDebug() << "WebSocket connection established!";
+            bool res = mpWebSocket->send(data2send);
+            if(!res)
+            {
+                mpWebSocket->shutdown();
+                QMessageBox::critical(this, tr("Sending failed!"), tr("Why: %1").arg("TBD"));
+            }
+        });
+        QObject::connect(mpWebSocket, &SeWebSocket::message, [&](QString msg){
+            qDebug() << "Received: " << msg.simplified();
+            ++numberOfStates_Received;
+            QJsonDocument jsonDoc = QJsonDocument::fromJson(msg.simplified().toLocal8Bit());
+            if(!jsonDoc.isObject()) {
+                /// TODO add fatal error handling
+            } else {
+                QJsonObject obj = jsonDoc.object();
+                if(!obj.contains("State")
+                && !obj.contains("x")
+                && !obj.contains("y")
+                ) {
+                    /// TODO add fatal error handling
+                } else {                
+                    QString state = obj["State"].toString().toLower();
+                    if(state.toLower() == "ok")
+                    {
+                        ++numberOfStates_Which_Are_Ok;
+                    }
+                }
+            }
+            
+            QString percentage = QString("%1 of %2")
+                .arg(numberOfStates_Received).arg(NUMBER_OF_STATES_TO_REACH);
+            ui->lblDeployWebSocket->setText(percentage);
+            
+            if(numberOfStates_Received == NUMBER_OF_STATES_TO_REACH)
+            {
+                if(numberOfStates_Which_Are_Ok == NUMBER_OF_STATES_TO_REACH)
+                {
+                    QMessageBox::information(this
+                        , tr("Upload finished!")
+                        , tr("All Grid-Coords are successfully set.")
+                        );
+                }
+                else
+                {
+                    QMessageBox::critical(this
+                        , tr("Upload finished!")
+                        , tr("Some Grid-Coords failed: %1 of %2")
+                            .arg(NUMBER_OF_STATES_TO_REACH - numberOfStates_Which_Are_Ok)
+                            .arg(NUMBER_OF_STATES_TO_REACH)
+                        );
+                }
+            
+                mpWebSocket->shutdown();
+            }
+        });
+        QObject::connect(mpWebSocket, &SeWebSocket::closed, [=](){
+            qDebug() << "Disconnected!";
+            mpLoading->stop();
+            ui->cmdDeployWebSocket->setIcon(QIcon(":/Images/websocket0.png"));
+        });
+        mpWebSocket->setUrlAndConnect(url);
+    }
 }
 
 void SeMainWindow::on_cmdDeploy_clicked()
@@ -987,3 +1146,4 @@ void SeMainWindow::on_actionAbout_SceneEditor_triggered()
             .arg(license)
         );
 }
+

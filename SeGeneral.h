@@ -4,10 +4,10 @@
  * License: MIT License, http://opensource.org/licenses/MIT
  */
 
+#pragma once
+
 #ifndef __SEGENERAL_H__
 #define __SEGENERAL_H__
-
-#pragma once
 
 #define SE_CONT4NULL(ptr) if(ptr == NULL) { continue; }
 #define SE_CONT4TRUE(res) if(res == true) { continue; }

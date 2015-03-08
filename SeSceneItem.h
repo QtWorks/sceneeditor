@@ -4,10 +4,10 @@
  * License: MIT License, http://opensource.org/licenses/MIT
  */
 
+#pragma once
+
 #ifndef __SESCENEITEM_H__
 #define __SESCENEITEM_H__
-
-#pragma once
 
 // Qt
 #include <QSize>

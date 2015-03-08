@@ -136,6 +136,33 @@ QJsonObject SeSceneLayer::toJson()
   return obj;
 }
 
+QJsonObject SeSceneLayer::toGridCommand()
+{
+    QJsonObject obj;
+    obj["type"] = "grid";
+    QJsonArray ar;
+    for(int x=0; x < mColumns; ++x)
+    {
+        for(int y=0; y < mRows; ++y)
+        {
+            SeSceneItem *item = this->sceneItem(x, y);
+            SE_CONT4NULL(item);
+        
+            QJsonObject innerObj;
+            innerObj["x"] = x;
+            innerObj["y"] = y;
+            innerObj["red"] = item->properties().brushColor().red();
+            innerObj["green"] = item->properties().brushColor().green();
+            innerObj["blue"] = item->properties().brushColor().blue();
+
+            ar.append(innerObj);
+        }
+    }
+    obj["data"] = ar;
+
+    return obj;
+}
+
 QString SeSceneLayer::toAvrCsv()
 {
   QString s; QTextStream ss(&s);

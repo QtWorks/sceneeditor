@@ -4,10 +4,10 @@
  * License: MIT License, http://opensource.org/licenses/MIT
  */
 
+#pragma once
+
 #ifndef __SESCENEVIEW_H__
 #define __SESCENEVIEW_H__
-
-#pragma once
 
 // SceneEditor
 #include <SeScene.h>

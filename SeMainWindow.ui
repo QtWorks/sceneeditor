@@ -106,7 +106,7 @@
   <widget class="QDockWidget" name="dockScenes">
    <property name="minimumSize">
     <size>
-     <width>355</width>
+     <width>374</width>
      <height>462</height>
     </size>
    </property>
@@ -348,21 +348,6 @@
             <string/>
            </property>
            <layout class="QHBoxLayout" name="horizontalLayout_7">
-            <property name="spacing">
-             <number>0</number>
-            </property>
-            <property name="leftMargin">
-             <number>2</number>
-            </property>
-            <property name="topMargin">
-             <number>2</number>
-            </property>
-            <property name="rightMargin">
-             <number>2</number>
-            </property>
-            <property name="bottomMargin">
-             <number>2</number>
-            </property>
             <item>
              <widget class="QPushButton" name="cmdDeploy">
               <property name="enabled">
@@ -386,7 +371,7 @@
                <bool>false</bool>
               </property>
               <property name="toolTip">
-               <string>Generate Video and open destination folder.</string>
+               <string>Generate a video based on the sequences and open destination folder.</string>
               </property>
               <property name="text">
                <string/>
@@ -394,6 +379,30 @@
               <property name="icon">
                <iconset resource="images.qrc">
                 <normaloff>:/Images/video.png</normaloff>:/Images/video.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="cmdDeployWebSocket">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>Open a WebSocket connection to a RGB wall and deploy the current shown layer.</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="icon">
+               <iconset resource="images.qrc">
+                <normaloff>:/Images/websocket0.png</normaloff>:/Images/websocket0.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="lblDeployWebSocket">
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>
@@ -747,6 +756,10 @@
    </property>
   </action>
   <action name="actionExi">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/Images/exit.png</normaloff>:/Images/exit.png</iconset>
+   </property>
    <property name="text">
     <string>Exit</string>
    </property>
@@ -757,6 +770,10 @@
    </property>
   </action>
   <action name="actionAbout_SceneEditor">
+   <property name="icon">
+    <iconset resource="images.qrc">
+     <normaloff>:/logos/sceneeditor01.png</normaloff>:/logos/sceneeditor01.png</iconset>
+   </property>
    <property name="text">
     <string>About SceneEditor...</string>
    </property>

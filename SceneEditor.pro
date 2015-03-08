@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui opengl multimediawidgets
+QT       += core gui opengl multimediawidgets websockets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -23,7 +23,8 @@ SOURCES += main.cpp\
     SeSceneView.cpp \
     SeSceneLayer.cpp \
     SeScenePlayer.cpp \
-    SeMosaicWindow.cpp
+    SeMosaicWindow.cpp \
+    SeWebSocket.cpp
 
 HEADERS  += SeMainWindow.h \
     SeTreeScenes.h \
@@ -35,7 +36,8 @@ HEADERS  += SeMainWindow.h \
     SeSceneLayer.h \
     SeScenePlayer.h \
     SeMosaicWindow.h \
-    SeGeneral.h
+    SeGeneral.h \
+    SeWebSocket.h
 
 FORMS    += SeMainWindow.ui \
     SeMosaicWindow.ui

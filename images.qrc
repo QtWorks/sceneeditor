@@ -11,6 +11,9 @@
         <file alias="video.png">Images/video0.png</file>
         <file alias="deploy.png">Images/deploy.png</file>
         <file>Images/deploy0.png</file>
+        <file alias="websocket0.png">Images/websocket0.png</file>
+        <file alias="loading.gif">Images/loading.gif</file>
+        <file alias="exit.png">Images/exit.png</file>
     </qresource>
     <qresource prefix="/logos">
         <file alias="sceneeditor01.png">Images/sceneeditor01.png</file>

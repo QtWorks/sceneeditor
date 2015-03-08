@@ -4,10 +4,10 @@
  * License: MIT License, http://opensource.org/licenses/MIT
  */
 
+#pragma once
+
 #ifndef __SESCENELAYER_H__
 #define __SESCENELAYER_H__
-
-#pragma once
 
 // SceneEditor
 #include <SeSceneItem.h>
@@ -55,7 +55,28 @@ public:
    
    void loadJson(const QJsonObject & jsonObj);
    QJsonObject toJson();
+   
    QString toAvrCsv();
+   
+   //! Generated and returns the JSON command used for 
+   //! deploying this Layer to the Node.js target.
+   //! Following format is used for the JSON object:
+   //!
+   //! Protocol:
+   //! --------------------------------------------------------------
+   //! { "type" : "single",
+   //!   "data" : {
+   //!       "x" : INT, "y" : INT,
+   //!       "red" : INT, "green" : INT, "blue" : INT
+   //! }}
+   //!
+   //! { "type" : "grid",
+   //!   "data" : [
+   //!  { "x":INT, "y":INT, "red":INT, "green":INT, "blue":INT },
+   //!      { ... }
+   //! ]}
+   //! --------------------------------------------------------------
+   QJsonObject toGridCommand();   
    
 protected:
   QRectF boundingRect() const;

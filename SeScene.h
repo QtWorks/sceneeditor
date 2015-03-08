@@ -4,10 +4,10 @@
  * License: MIT License, http://opensource.org/licenses/MIT
  */
 
+#pragma once
+
 #ifndef __SESCENE_H__
 #define __SESCENE_H__
-
-#pragma once
 
 // Qt
 #include <QObject>
